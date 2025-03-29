@@ -1,0 +1,75 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "solana-explorer",
+  "title": "Solana Explorer",
+  "description": "Brings the Solana Explorer to your Raycast. Quickly Search by Address, Transaction Hash, block or token.",
+  "icon": "extension-icon.png",
+  "author": "dharmin_nagar",
+  "categories": [
+    "Finance"
+  ],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "search-explorer",
+      "title": "Search Explorer",
+      "description": "Opens up a Search Menu for the Explorer",
+      "mode": "view"
+    },
+    {
+      "name": "view-history",
+      "title": "View Search History",
+      "description": "View your previous Solana searches",
+      "mode": "view"
+    }
+  ],
+  "preferences": [
+    {
+      "name": "defaultExplorer",
+      "type": "dropdown",
+      "required": true,
+      "title": "Default Explorer",
+      "description": "Choose your preferred Solana explorer",
+      "data": [
+        {
+          "title": "Solana Explorer",
+          "value": "Solana Explorer"
+        },
+        {
+          "title": "Solscan",
+          "value": "Solscan"
+        },
+        {
+          "title": "Solana.fm",
+          "value": "SolanaFM"
+        }
+      ],
+      "default": "Solana Explorer"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.94.2",
+    "@raycast/utils": "^1.17.0",
+    "@solana/spl-token": "^0.3.11",
+    "@solana/spl-token-metadata": "^0.1.6",
+    "@solana/spl-token-registry": "^0.2.4574",
+    "@solana/web3.js": "^1.91.1",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^2.0.4",
+    "@types/node": "22.13.10",
+    "@types/react": "19.0.10",
+    "eslint": "^9.22.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
+  },
+  "scripts": {
+    "build": "ray build",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",
+    "publish": "npx @raycast/api@latest publish"
+  }
+}
