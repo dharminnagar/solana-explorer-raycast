@@ -193,7 +193,10 @@ export async function searchSolana(query: string, network: Network = "mainnet"):
     }
 
     case "block": {
-      const block = await connection.getBlock(parseInt(query));
+      const block = await connection.getBlock(parseInt(query), {
+        commitment: "confirmed",
+        maxSupportedTransactionVersion: 0,
+      });
       if (!block) {
         throw new Error("Block not found");
       }
