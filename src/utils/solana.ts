@@ -4,7 +4,7 @@ import { TokenInfo, TokenListProvider } from "@solana/spl-token-registry";
 import { getPreferenceValues } from "@raycast/api";
 
 interface Preferences {
-  defaultExplorer: "Solana Explorer" | "Solscan" | "SolanaFM";
+  defaultExplorer: "Solana Explorer" | "Solscan" | "SolanaFM" | "Orb";
   moralisApiKey: string;
 }
 
@@ -52,6 +52,7 @@ export const EXPLORER_BASE_URLS = {
   "Solana Explorer": "https://explorer.solana.com",
   Solscan: "https://solscan.io",
   SolanaFM: "https://solana.fm",
+  Orb: "https://orb.helius.dev",
 };
 
 export const EXPLORER_CLUSTER_URLS = {
@@ -69,6 +70,11 @@ export const EXPLORER_CLUSTER_URLS = {
     mainnet: "",
     devnet: "?cluster=devnet-solana",
     testnet: "?cluster=testnet-solana",
+  },
+  Orb: {
+    mainnet: "",
+    devnet: "?cluster=devnet",
+    testnet: "?cluster=testnet",
   },
 };
 

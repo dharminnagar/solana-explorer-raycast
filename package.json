@@ -37,6 +37,10 @@
         {
           "title": "Solana.fm",
           "value": "SolanaFM"
+        },
+        {
+          "title": "Orb",
+          "value": "Orb"
         }
       ],
       "default": "Solana Explorer"

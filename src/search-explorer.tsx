@@ -26,7 +26,7 @@ import {
 } from "./utils/history";
 
 interface Preferences {
-  defaultExplorer: "Solana Explorer" | "Solscan" | "SolanaFM";
+  defaultExplorer: "Solana Explorer" | "Solscan" | "SolanaFM" | "Orb";
 }
 
 export default function Command() {
