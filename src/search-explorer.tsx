@@ -11,6 +11,7 @@ import {
   LocalStorage,
   Alert,
   confirmAlert,
+  showHUD,
 } from "@raycast/api";
 import { useState, useEffect } from "react";
 import { searchSolana, formatSearchResult, Network, EXPLORER_BASE_URLS, EXPLORER_CLUSTER_URLS } from "./utils/solana";
@@ -158,7 +159,13 @@ export default function Command() {
                           title={`Open in ${preferences.defaultExplorer}`}
                           url={getExplorerUrl(searchQuery)}
                         />
-                        <Action.CopyToClipboard title="Copy to Clipboard" content={searchQuery} />
+                        <Action.CopyToClipboard
+                          title="Copy to Clipboard"
+                          content={searchQuery}
+                          onCopy={async () => {
+                            await showHUD("Copied to clipboard");
+                          }}
+                        />
                         {networkActions}
                       </ActionPanel>
                     }
@@ -169,7 +176,13 @@ export default function Command() {
                 title={`Open in ${preferences.defaultExplorer}`}
                 url={getExplorerUrl(searchQuery)}
               />
-              <Action.CopyToClipboard title="Copy to Clipboard" content={searchQuery} />
+              <Action.CopyToClipboard
+                title="Copy to Clipboard"
+                content={searchQuery}
+                onCopy={async () => {
+                  await showHUD("Copied to clipboard");
+                }}
+              />
               {networkActions}
             </ActionPanel>
           }
@@ -200,7 +213,13 @@ export default function Command() {
                     title={`Open in ${preferences.defaultExplorer}`}
                     url={getExplorerUrl(item.query)}
                   />
-                  <Action.CopyToClipboard title="Copy to Clipboard" content={item.query} />
+                  <Action.CopyToClipboard
+                    title="Copy to Clipboard"
+                    content={item.query}
+                    onCopy={async () => {
+                      await showHUD("Copied to clipboard");
+                    }}
+                  />
                   <Action
                     title="Delete Item"
                     icon={Icon.XMarkCircle}
