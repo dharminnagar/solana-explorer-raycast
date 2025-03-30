@@ -1,4 +1,5 @@
 import { LocalStorage } from "@raycast/api";
+import { Network } from "./solana";
 
 export interface SearchHistoryItem {
   query: string;
@@ -7,6 +8,7 @@ export interface SearchHistoryItem {
 }
 
 const HISTORY_KEY = "solana-search-history";
+const NETWORK_KEY = "solana-network";
 const MAX_HISTORY_ITEMS = 50;
 
 export async function addToHistory(query: string, type: string) {
@@ -36,4 +38,13 @@ export async function getHistory(): Promise<SearchHistoryItem[]> {
 
 export async function clearHistory() {
   await LocalStorage.removeItem(HISTORY_KEY);
+}
+
+export async function getLastNetwork(): Promise<Network> {
+  const network = await LocalStorage.getItem<string>(NETWORK_KEY);
+  return (network as Network) || "mainnet";
+}
+
+export async function setLastNetwork(network: Network) {
+  await LocalStorage.setItem(NETWORK_KEY, network);
 }

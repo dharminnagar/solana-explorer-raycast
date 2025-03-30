@@ -11,7 +11,7 @@ import {
 } from "@raycast/api";
 import { useState, useEffect } from "react";
 import { searchSolana, formatSearchResult, Network, EXPLORER_BASE_URLS, EXPLORER_CLUSTER_URLS } from "./utils/solana";
-import { addToHistory } from "./utils/history";
+import { addToHistory, getLastNetwork, setLastNetwork } from "./utils/history";
 
 interface Preferences {
   defaultExplorer: "Solana Explorer" | "Solscan" | "SolanaFM";
@@ -24,11 +24,26 @@ export default function Command() {
   const [currentNetwork, setCurrentNetwork] = useState<Network>("mainnet");
   const preferences = getPreferenceValues<Preferences>();
 
+  // Load the last selected network when the component mounts
+  useEffect(() => {
+    loadLastNetwork();
+  }, []);
+
   useEffect(() => {
     if (searchQuery) {
       performSearch();
     }
   }, [searchQuery, currentNetwork]);
+
+  async function loadLastNetwork() {
+    const lastNetwork = await getLastNetwork();
+    setCurrentNetwork(lastNetwork);
+  }
+
+  async function handleNetworkChange(network: Network) {
+    setCurrentNetwork(network);
+    await setLastNetwork(network);
+  }
 
   async function performSearch() {
     setIsLoading(true);
@@ -77,23 +92,23 @@ export default function Command() {
   };
 
   const networkActions = (
-    <ActionPanel.Submenu title="Switch Network" icon={Icon.Globe}>
+    <ActionPanel.Submenu title="Switch Network" icon={Icon.Network}>
       <Action
         title="Mainnet"
         icon={Icon.Globe}
-        onAction={() => setCurrentNetwork("mainnet")}
+        onAction={() => handleNetworkChange("mainnet")}
         autoFocus={currentNetwork === "mainnet"}
       />
       <Action
         title="Devnet"
-        icon={Icon.Globe}
-        onAction={() => setCurrentNetwork("devnet")}
+        icon={Icon.Code}
+        onAction={() => handleNetworkChange("devnet")}
         autoFocus={currentNetwork === "devnet"}
       />
       <Action
         title="Testnet"
-        icon={Icon.Globe}
-        onAction={() => setCurrentNetwork("testnet")}
+        icon={Icon.Hammer}
+        onAction={() => handleNetworkChange("testnet")}
         autoFocus={currentNetwork === "testnet"}
       />
     </ActionPanel.Submenu>
