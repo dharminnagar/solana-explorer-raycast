@@ -44,6 +44,30 @@
         }
       ],
       "default": "Solana Explorer"
+    },
+    {
+      "name": "mainnetRpcUrl",
+      "type": "textfield",
+      "required": true,
+      "title": "Mainnet RPC URL",
+      "description": "Enter your preferred Mainnet RPC URL",
+      "default": "https://api.mainnet-beta.solana.com"
+    },
+    {
+      "name": "devnetRpcUrl",
+      "type": "textfield",
+      "required": true,
+      "title": "Devnet RPC URL",
+      "description": "Enter your preferred Devnet RPC URL",
+      "default": "https://api.devnet.solana.com"
+    },
+    {
+      "name": "testnetRpcUrl",
+      "type": "textfield",
+      "required": true,
+      "title": "Testnet RPC URL",
+      "description": "Enter your preferred Testnet RPC URL",
+      "default": "https://api.testnet.solana.com"
     }
   ],
   "dependencies": {

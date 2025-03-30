@@ -5,6 +5,9 @@ import { getPreferenceValues } from "@raycast/api";
 
 interface Preferences {
   defaultExplorer: "Solana Explorer" | "Solscan" | "SolanaFM" | "Orb";
+  mainnetRpcUrl: string;
+  devnetRpcUrl: string;
+  testnetRpcUrl: string;
 }
 
 const preferences = getPreferenceValues<Preferences>();
@@ -32,9 +35,9 @@ export interface TokenMetadata {
 
 // RPC URLs for different networks
 export const RPC_URLS = {
-  mainnet: "https://mainnet.helius-rpc.com/?api-key=20775439-c373-4f7e-8a64-f705c75b3b37",
-  devnet: clusterApiUrl("devnet"),
-  testnet: clusterApiUrl("testnet"),
+  mainnet: preferences.mainnetRpcUrl,
+  devnet: preferences.devnetRpcUrl,
+  testnet: preferences.testnetRpcUrl,
 };
 
 // Explorer URLs for different networks
