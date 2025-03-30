@@ -48,21 +48,27 @@ export const RPC_URLS = {
 };
 
 // Explorer URLs for different networks
-export const EXPLORER_URLS = {
+export const EXPLORER_BASE_URLS = {
+  "Solana Explorer": "https://explorer.solana.com",
+  Solscan: "https://solscan.io",
+  SolanaFM: "https://solana.fm",
+};
+
+export const EXPLORER_CLUSTER_URLS = {
   "Solana Explorer": {
-    mainnet: "https://explorer.solana.com",
-    devnet: "https://explorer.solana.com/?cluster=devnet",
-    testnet: "https://explorer.solana.com/?cluster=testnet",
+    mainnet: "",
+    devnet: "?cluster=devnet",
+    testnet: "?cluster=testnet",
   },
   Solscan: {
-    mainnet: "https://solscan.io",
-    devnet: "https://solscan.io?cluster=devnet",
-    testnet: "https://solscan.io?cluster=testnet",
+    mainnet: "",
+    devnet: "?cluster=devnet",
+    testnet: "?cluster=testnet",
   },
   SolanaFM: {
-    mainnet: "https://solana.fm",
-    devnet: "https://solana.fm?cluster=devnet",
-    testnet: "https://solana.fm?cluster=testnet",
+    mainnet: "",
+    devnet: "?cluster=devnet-solana",
+    testnet: "?cluster=testnet-solana",
   },
 };
 

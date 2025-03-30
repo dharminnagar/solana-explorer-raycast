@@ -1,13 +1,14 @@
 import { ActionPanel, List, Action, Icon, showToast, Toast, Detail } from "@raycast/api";
 import { useEffect, useState } from "react";
 import { getHistory, clearHistory, SearchHistoryItem } from "./utils/history";
-import { searchSolana, formatSearchResult, EXPLORER_URLS } from "./utils/solana";
+import { searchSolana, formatSearchResult, EXPLORER_BASE_URLS, EXPLORER_CLUSTER_URLS, Network } from "./utils/solana";
 import { preferences } from "./preferences";
 
 export default function Command() {
   const [history, setHistory] = useState<SearchHistoryItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<SearchHistoryItem | null>(null);
   const [searchResult, setSearchResult] = useState<any>(null);
+  const [currentNetwork] = useState<Network>("mainnet");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -43,18 +44,19 @@ export default function Command() {
     }
   }
 
-  const getExplorerUrl = (query: string) => {
-    const baseUrl = EXPLORER_URLS[preferences.defaultExplorer];
+  const getExplorerUrl = (query: string): string => {
+    const baseUrl = EXPLORER_BASE_URLS[preferences.defaultExplorer];
+    const clusterUrl = EXPLORER_CLUSTER_URLS[preferences.defaultExplorer][currentNetwork];
     if (searchResult?.type === "address") {
-      return `${baseUrl}/account/${query}`;
+      return `${baseUrl}/account/${query}${clusterUrl}`;
     } else if (searchResult?.type === "transaction") {
-      return `${baseUrl}/tx/${query}`;
+      return `${baseUrl}/tx/${query}${clusterUrl}`;
     } else if (searchResult?.type === "block") {
-      return `${baseUrl}/block/${query}`;
+      return `${baseUrl}/block/${query}${clusterUrl}`;
     } else if (searchResult?.type === "token") {
-      return `${baseUrl}/token/${query}`;
+      return `${baseUrl}/token/${query}${clusterUrl}`;
     }
-    return baseUrl;
+    return `${baseUrl}${clusterUrl}`;
   };
 
   return (

@@ -10,7 +10,7 @@ import {
   Clipboard,
 } from "@raycast/api";
 import { useState, useEffect } from "react";
-import { searchSolana, formatSearchResult, EXPLORER_URLS, Network } from "./utils/solana";
+import { searchSolana, formatSearchResult, Network, EXPLORER_BASE_URLS, EXPLORER_CLUSTER_URLS } from "./utils/solana";
 import { addToHistory } from "./utils/history";
 
 interface Preferences {
@@ -63,16 +63,17 @@ export default function Command() {
     }
   }
 
-  const getExplorerUrl = (query: string) => {
-    const baseUrl = EXPLORER_URLS[preferences.defaultExplorer][currentNetwork];
+  const getExplorerUrl = (query: string): string => {
+    const baseUrl = EXPLORER_BASE_URLS[preferences.defaultExplorer];
+    const clusterUrl = EXPLORER_CLUSTER_URLS[preferences.defaultExplorer][currentNetwork];
     if (searchResult?.type === "address") {
-      return `${baseUrl}/account/${query}`;
+      return `${baseUrl}/account/${query}${clusterUrl}`;
     } else if (searchResult?.type === "transaction") {
-      return `${baseUrl}/tx/${query}`;
+      return `${baseUrl}/tx/${query}${clusterUrl}`;
     } else if (searchResult?.type === "block") {
-      return `${baseUrl}/block/${query}`;
+      return `${baseUrl}/block/${query}${clusterUrl}`;
     }
-    return baseUrl;
+    return `${baseUrl}${clusterUrl}`;
   };
 
   const networkActions = (
