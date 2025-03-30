@@ -176,7 +176,6 @@ export default function Command() {
       <List.Item
         icon={Icon.Clipboard}
         title="Paste from Clipboard"
-        subtitle="Paste the last copied text"
         actions={
           <ActionPanel>
             <Action title="Paste" onAction={handlePasteFromClipboard} />
@@ -203,6 +202,7 @@ export default function Command() {
                   <Action
                     title="Delete Item"
                     icon={Icon.Trash}
+                    shortcut={{ modifiers: ["ctrl"], key: "d" }}
                     onAction={async () => {
                       const updatedHistory = history.filter((h) => h.query !== item.query);
                       await LocalStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
@@ -212,6 +212,8 @@ export default function Command() {
                   <Action
                     title="Clear History"
                     icon={Icon.Trash}
+                    style={Action.Style.Destructive}
+                    shortcut={{ modifiers: ["ctrl"], key: "x" }}
                     onAction={async () => {
                       await clearHistory();
                       setHistory([]);
