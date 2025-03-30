@@ -1,4 +1,4 @@
-import { Connection, PublicKey, ParsedTransactionWithMeta, BlockResponse } from "@solana/web3.js";
+import { Connection, PublicKey, ParsedTransactionWithMeta, BlockResponse, clusterApiUrl } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { TokenInfo, TokenListProvider } from "@solana/spl-token-registry";
 import { getPreferenceValues } from "@raycast/api";
@@ -10,11 +10,14 @@ interface Preferences {
 
 const preferences = getPreferenceValues<Preferences>();
 
+export type Network = "mainnet" | "devnet" | "testnet";
+
 export type SearchType = "address" | "transaction" | "block" | "token";
 
 export interface SearchResult {
   type: SearchType;
   data: any;
+  network: Network;
 }
 
 export interface TokenMetadata {
@@ -37,19 +40,42 @@ interface MoralisTokenMetadata {
   fullyDilutedValue?: string;
 }
 
-export const SOLANA_RPC_URL = "https://mainnet.helius-rpc.com/?api-key=20775439-c373-4f7e-8a64-f705c75b3b37";
-export const connection = new Connection(SOLANA_RPC_URL);
+// RPC URLs for different networks
+export const RPC_URLS = {
+  mainnet: "https://mainnet.helius-rpc.com/?api-key=20775439-c373-4f7e-8a64-f705c75b3b37",
+  devnet: clusterApiUrl("devnet"),
+  testnet: clusterApiUrl("testnet"),
+};
 
+// Explorer URLs for different networks
 export const EXPLORER_URLS = {
-  "Solana Explorer": "https://explorer.solana.com",
-  Solscan: "https://solscan.io",
-  SolanaFM: "https://solana.fm",
+  "Solana Explorer": {
+    mainnet: "https://explorer.solana.com",
+    devnet: "https://explorer.solana.com/?cluster=devnet",
+    testnet: "https://explorer.solana.com/?cluster=testnet",
+  },
+  Solscan: {
+    mainnet: "https://solscan.io",
+    devnet: "https://solscan.io?cluster=devnet",
+    testnet: "https://solscan.io?cluster=testnet",
+  },
+  SolanaFM: {
+    mainnet: "https://solana.fm",
+    devnet: "https://solana.fm?cluster=devnet",
+    testnet: "https://solana.fm?cluster=testnet",
+  },
 };
 
 let tokenList: TokenInfo[] = [];
 
-async function isTokenAccount(address: string): Promise<boolean> {
+// Create a function to get connection for a specific network
+export function getConnection(network: Network): Connection {
+  return new Connection(RPC_URLS[network]);
+}
+
+async function isTokenAccount(address: string, network: Network): Promise<boolean> {
   try {
+    const connection = getConnection(network);
     const accountInfo = await connection.getAccountInfo(new PublicKey(address));
     if (!accountInfo) return false;
 
@@ -60,7 +86,7 @@ async function isTokenAccount(address: string): Promise<boolean> {
   }
 }
 
-async function getTokenMetadata(tokenAddress: string): Promise<TokenMetadata | null> {
+async function getTokenMetadata(tokenAddress: string, network: Network): Promise<TokenMetadata | null> {
   try {
     const options = {
       method: "GET",
@@ -71,7 +97,10 @@ async function getTokenMetadata(tokenAddress: string): Promise<TokenMetadata | n
       },
     };
 
-    const response = await fetch(`https://solana-gateway.moralis.io/token/mainnet/${tokenAddress}/metadata`, options);
+    const response = await fetch(
+      `https://solana-gateway.moralis.io/token/${network}/${tokenAddress}/metadata`,
+      options,
+    );
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -93,7 +122,7 @@ async function getTokenMetadata(tokenAddress: string): Promise<TokenMetadata | n
   }
 }
 
-export async function detectSearchType(query: string): Promise<SearchType> {
+export async function detectSearchType(query: string, network: Network): Promise<SearchType> {
   if (!query) return "address";
 
   // Check if it's a transaction signature (base58 encoded, 88 characters)
@@ -108,7 +137,7 @@ export async function detectSearchType(query: string): Promise<SearchType> {
 
   // For addresses, check if it's a token account
   if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(query)) {
-    const isToken = await isTokenAccount(query);
+    const isToken = await isTokenAccount(query, network);
     return isToken ? "token" : "address";
   }
 
@@ -116,12 +145,13 @@ export async function detectSearchType(query: string): Promise<SearchType> {
   return "address";
 }
 
-export async function searchSolana(query: string): Promise<SearchResult> {
+export async function searchSolana(query: string, network: Network = "mainnet"): Promise<SearchResult> {
   if (!query) {
     throw new Error("Search query cannot be empty");
   }
 
-  const type = await detectSearchType(query);
+  const type = await detectSearchType(query, network);
+  const connection = getConnection(network);
 
   switch (type) {
     case "address": {
@@ -131,6 +161,7 @@ export async function searchSolana(query: string): Promise<SearchResult> {
       }
       return {
         type,
+        network,
         data: {
           ...accountInfo,
           address: query,
@@ -145,6 +176,7 @@ export async function searchSolana(query: string): Promise<SearchResult> {
       }
       return {
         type,
+        network,
         data: tx,
       };
     }
@@ -156,6 +188,7 @@ export async function searchSolana(query: string): Promise<SearchResult> {
       }
       return {
         type,
+        network,
         data: block,
       };
     }
@@ -168,10 +201,11 @@ export async function searchSolana(query: string): Promise<SearchResult> {
 
       // Get the mint address from the token account data
       const mintAddress = new PublicKey(tokenAccountInfo.data.slice(0, 32)).toString();
-      const tokenMetadata = await getTokenMetadata(query);
+      const tokenMetadata = await getTokenMetadata(query, network);
 
       return {
         type,
+        network,
         data: {
           address: query,
           owner: tokenAccountInfo.owner?.toString() ?? "Unknown",
@@ -191,6 +225,8 @@ export function formatSearchResult(result: SearchResult): string {
   if (!result || !result.data) {
     return "# Error\nNo data available";
   }
+
+  const network = result.network.charAt(0).toUpperCase() + result.network.slice(1);
 
   switch (result.type) {
     case "address": {
@@ -216,7 +252,10 @@ export function formatSearchResult(result: SearchResult): string {
 ## Metadata
 - **Owner Program:** \`${owner}\`
 - **Rent Epoch:** ${rentEpoch}
-- **Slot:** ${slot}`;
+- **Slot:** ${slot}
+
+## Network
+- **Current Network:** ${network}`;
     }
 
     case "transaction": {
@@ -325,7 +364,10 @@ ${metadata?.standard ? `- **Standard:** ${metadata.standard}` : ""}
 
 ### Account Details
 - **Rent Epoch:** ${data.rentEpoch ?? "Unknown"}
-- **Executable:** ${data.executable ? "Yes" : "No"}`;
+- **Executable:** ${data.executable ? "Yes" : "No"}
+
+## Network
+- **Current Network:** ${network}`;
     }
 
     default:

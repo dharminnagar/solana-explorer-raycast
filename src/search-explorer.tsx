@@ -10,7 +10,7 @@ import {
   Clipboard,
 } from "@raycast/api";
 import { useState, useEffect } from "react";
-import { searchSolana, formatSearchResult, EXPLORER_URLS, SearchResult } from "./utils/solana";
+import { searchSolana, formatSearchResult, EXPLORER_URLS, Network } from "./utils/solana";
 import { addToHistory } from "./utils/history";
 
 interface Preferences {
@@ -19,20 +19,21 @@ interface Preferences {
 
 export default function Command() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
+  const [searchResult, setSearchResult] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentNetwork, setCurrentNetwork] = useState<Network>("mainnet");
   const preferences = getPreferenceValues<Preferences>();
 
   useEffect(() => {
     if (searchQuery) {
       performSearch();
     }
-  }, [searchQuery]);
+  }, [searchQuery, currentNetwork]);
 
   async function performSearch() {
     setIsLoading(true);
     try {
-      const result = await searchSolana(searchQuery);
+      const result = await searchSolana(searchQuery, currentNetwork);
       setSearchResult(result);
       // Save to history
       await addToHistory(searchQuery, result.type);
@@ -63,7 +64,7 @@ export default function Command() {
   }
 
   const getExplorerUrl = (query: string) => {
-    const baseUrl = EXPLORER_URLS[preferences.defaultExplorer];
+    const baseUrl = EXPLORER_URLS[preferences.defaultExplorer][currentNetwork];
     if (searchResult?.type === "address") {
       return `${baseUrl}/account/${query}`;
     } else if (searchResult?.type === "transaction") {
@@ -73,6 +74,29 @@ export default function Command() {
     }
     return baseUrl;
   };
+
+  const networkActions = (
+    <ActionPanel.Submenu title="Switch Network" icon={Icon.Globe}>
+      <Action
+        title="Mainnet"
+        icon={Icon.Globe}
+        onAction={() => setCurrentNetwork("mainnet")}
+        autoFocus={currentNetwork === "mainnet"}
+      />
+      <Action
+        title="Devnet"
+        icon={Icon.Globe}
+        onAction={() => setCurrentNetwork("devnet")}
+        autoFocus={currentNetwork === "devnet"}
+      />
+      <Action
+        title="Testnet"
+        icon={Icon.Globe}
+        onAction={() => setCurrentNetwork("testnet")}
+        autoFocus={currentNetwork === "testnet"}
+      />
+    </ActionPanel.Submenu>
+  );
 
   return (
     <List
@@ -84,7 +108,7 @@ export default function Command() {
         <List.Item
           icon={Icon.MagnifyingGlass}
           title={searchQuery}
-          subtitle={searchResult.type.charAt(0).toUpperCase() + searchResult.type.slice(1)}
+          subtitle={`${searchResult.type.charAt(0).toUpperCase() + searchResult.type.slice(1)} • ${currentNetwork.charAt(0).toUpperCase() + currentNetwork.slice(1)}`}
           actions={
             <ActionPanel>
               <Action.Push
@@ -99,6 +123,7 @@ export default function Command() {
                           url={getExplorerUrl(searchQuery)}
                         />
                         <Action.CopyToClipboard title="Copy to Clipboard" content={searchQuery} />
+                        {networkActions}
                       </ActionPanel>
                     }
                   />
@@ -109,6 +134,7 @@ export default function Command() {
                 url={getExplorerUrl(searchQuery)}
               />
               <Action.CopyToClipboard title="Copy to Clipboard" content={searchQuery} />
+              {networkActions}
             </ActionPanel>
           }
         />
@@ -120,6 +146,7 @@ export default function Command() {
         actions={
           <ActionPanel>
             <Action title="Paste" onAction={handlePasteFromClipboard} />
+            {networkActions}
           </ActionPanel>
         }
       />

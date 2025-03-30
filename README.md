@@ -12,6 +12,12 @@ A powerful Raycast extension that brings Solana blockchain exploration directly 
 - **Block Explorer**: Look up block information by block number
 - **Token Discovery**: Search for token accounts and view detailed token information
 
+### 🌐 Network Support
+- **Mainnet**: Access the main Solana network
+- **Devnet**: Connect to Solana's development network
+- **Testnet**: Use Solana's test network
+- Easily switch networks with a click
+
 ### 📊 Comprehensive Information
 - **Account Details**:
   - SOL balance
@@ -76,6 +82,7 @@ A powerful Raycast extension that brings Solana blockchain exploration directly 
 4. Click the gear icon to open preferences
 5. Configure:
    - Default Explorer: Choose your preferred Solana block explorer
+   - Network: Select the Solana network (Mainnet, Devnet, or Testnet)
    - Moralis API Key: Your API key for token metadata
 
 ## Development
