@@ -5,7 +5,6 @@ import { getPreferenceValues } from "@raycast/api";
 
 interface Preferences {
   defaultExplorer: "Solana Explorer" | "Solscan" | "SolanaFM" | "Orb";
-  moralisApiKey: string;
 }
 
 const preferences = getPreferenceValues<Preferences>();
@@ -24,20 +23,11 @@ export interface TokenMetadata {
   name: string;
   symbol: string;
   decimals: number;
+  description?: string;
   logoURI?: string;
-  website?: string;
-  totalSupplyFormatted?: string;
-  fullyDilutedValue?: string;
-}
-
-interface MoralisTokenMetadata {
-  name?: string;
-  symbol?: string;
-  decimals?: number;
-  logo?: string;
-  website?: string;
-  totalSupplyFormatted?: string;
-  fullyDilutedValue?: string;
+  marketCap?: string;
+  liquidity?: string;
+  totalSupply?: string;
 }
 
 // RPC URLs for different networks
@@ -67,7 +57,7 @@ export const EXPLORER_CLUSTER_URLS = {
     testnet: "?cluster=testnet",
   },
   SolanaFM: {
-    mainnet: "",
+    mainnet: "?cluster=mainnet-alpha",
     devnet: "?cluster=devnet-solana",
     testnet: "?cluster=testnet-solana",
   },
@@ -100,33 +90,23 @@ async function isTokenAccount(address: string, network: Network): Promise<boolea
 
 async function getTokenMetadata(tokenAddress: string, network: Network): Promise<TokenMetadata | null> {
   try {
-    const options = {
-      method: "GET",
-      headers: {
-        accept: "application/json",
-        "X-API-Key":
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6ImJkNzIxYWU2LTQ2ZmQtNGI3YS1hY2ZiLTJkMTIyYTdhZjMwZiIsIm9yZ0lkIjoiNDM4NjQ4IiwidXNlcklkIjoiNDUxMjc3IiwidHlwZUlkIjoiNmE1MTg1ZTItZWI1OC00NmU3LWIxYzUtNjlkYjQyNTVjMTQxIiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3NDMyNDMwNzUsImV4cCI6NDg5OTAwMzA3NX0.wu-4ImKXtLBf9LX5oSTLglzmtLIZr_EMEln-DknPlqc",
-      },
-    };
-
-    const response = await fetch(
-      `https://solana-gateway.moralis.io/token/${network}/${tokenAddress}/metadata`,
-      options,
-    );
+    const response = await fetch(`https://api.phantom.app/tokens/v1/solana:101/address/${tokenAddress}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data = (await response.json()) as MoralisTokenMetadata;
+    const parsedReponse = (await response.json()) as any;
+    const data = parsedReponse.data;
 
     // Validate and transform the response data
     return {
       name: data.name || "Unknown Token",
       symbol: data.symbol || "UNKNOWN",
       decimals: Number(data.decimals) || 0,
-      logoURI: data.logo,
-      website: data.website,
-      totalSupplyFormatted: data.totalSupplyFormatted,
-      fullyDilutedValue: data.fullyDilutedValue,
+      logoURI: data.logoURI,
+      description: data.description,
+      marketCap: data.marketCap,
+      liquidity: data.liquidity,
+      totalSupply: data.totalSupply,
     };
   } catch (error) {
     console.error("Error fetching token metadata:", error);
@@ -369,10 +349,12 @@ ${metadata?.logoURI ? `<img src="${metadata.logoURI}" width="48" height="48" sty
 - **Symbol:** ${metadata?.symbol ?? "Unknown"}
 - **Decimals:** ${metadata?.decimals ?? "Unknown"}
 ${metadata?.standard ? `- **Standard:** ${metadata.standard}` : ""}
+${metadata?.description ? `- **Description:** ${metadata.description}` : ""}
 
 ### Market Data
-- **Fully Diluted Value:** $${metadata?.fullyDilutedValue ?? "Unknown"}
-- **Total Supply:** ${metadata?.totalSupplyFormatted ?? "Unknown"}
+${metadata?.marketCap ? `- **Market Cap:** $${metadata.marketCap}` : ""}
+${metadata?.liquidity ? `- **Liquidity:** $${metadata.liquidity}` : ""}
+${metadata?.totalSupply ? `- **Total Supply:** ${metadata.totalSupply}` : ""}
 
 ## Account Information
 ### Overview

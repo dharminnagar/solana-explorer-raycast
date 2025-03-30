@@ -102,7 +102,7 @@ export default function Command() {
   const getExplorerUrl = (query: string): string => {
     const baseUrl = EXPLORER_BASE_URLS[preferences.defaultExplorer];
     const clusterUrl = EXPLORER_CLUSTER_URLS[preferences.defaultExplorer][currentNetwork];
-    if (searchResult?.type === "address") {
+    if (searchResult?.type === "address" || searchResult?.type === "token") {
       return `${baseUrl}/account/${query}${clusterUrl}`;
     } else if (searchResult?.type === "transaction") {
       return `${baseUrl}/tx/${query}${clusterUrl}`;
