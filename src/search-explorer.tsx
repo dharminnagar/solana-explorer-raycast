@@ -9,6 +9,8 @@ import {
   getPreferenceValues,
   Clipboard,
   LocalStorage,
+  Alert,
+  confirmAlert,
 } from "@raycast/api";
 import { useState, useEffect } from "react";
 import { searchSolana, formatSearchResult, Network, EXPLORER_BASE_URLS, EXPLORER_CLUSTER_URLS } from "./utils/solana";
@@ -201,7 +203,7 @@ export default function Command() {
                   <Action.CopyToClipboard title="Copy to Clipboard" content={item.query} />
                   <Action
                     title="Delete Item"
-                    icon={Icon.Trash}
+                    icon={Icon.XMarkCircle}
                     shortcut={{ modifiers: ["ctrl"], key: "d" }}
                     onAction={async () => {
                       const updatedHistory = history.filter((h) => h.query !== item.query);
@@ -215,8 +217,18 @@ export default function Command() {
                     style={Action.Style.Destructive}
                     shortcut={{ modifiers: ["ctrl"], key: "x" }}
                     onAction={async () => {
-                      await clearHistory();
-                      setHistory([]);
+                      const confirmed = await confirmAlert({
+                        title: "Clear Search History",
+                        message: "Are you sure you want to clear all search history? This action cannot be undone.",
+                        primaryAction: {
+                          title: "Clear History",
+                          style: Alert.ActionStyle.Destructive,
+                        },
+                      });
+                      if (confirmed) {
+                        await clearHistory();
+                        setHistory([]);
+                      }
                     }}
                   />
                 </ActionPanel>
