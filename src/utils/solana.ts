@@ -132,7 +132,7 @@ export async function detectSearchType(query: string, network: Network): Promise
   if (!query) return "address";
 
   // Check if it's a transaction signature (base58 encoded, 88 characters)
-  if (/^[1-9A-HJ-NP-Za-km-z]{88}$/.test(query)) {
+  if (/^[1-9A-HJ-NP-Za-km-z]{87,88}$/.test(query)) {
     return "transaction";
   }
 
@@ -176,15 +176,20 @@ export async function searchSolana(query: string, network: Network = "mainnet"):
     }
 
     case "transaction": {
-      const tx = await connection.getParsedTransaction(query);
-      if (!tx) {
+      try {
+        const tx = await connection.getParsedTransaction(query, {
+          commitment: "confirmed",
+          maxSupportedTransactionVersion: 0,
+        });
+        return {
+          type,
+          network,
+          data: tx,
+        };
+      } catch (error) {
+        console.error("Error fetching transaction:", error);
         throw new Error("Transaction not found");
       }
-      return {
-        type,
-        network,
-        data: tx,
-      };
     }
 
     case "block": {
@@ -281,7 +286,7 @@ export function formatSearchResult(result: SearchResult): string {
 - **Signature:** \`${data.transaction.signatures[0]}\`
 - **Block Time:** ${blockTime}
 - **Fee:** ${fee} SOL (${data.meta.fee?.toLocaleString() ?? "0"} lamports)
-- **Status:** ${status}
+- **Status:** ${status === "Success" ? "🟢 Success" : "🔴 Failed"}
 
 ## Transaction Info
 - **Slot:** ${data.slot ?? "Unknown"}
