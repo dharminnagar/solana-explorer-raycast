@@ -16,12 +16,6 @@
       "title": "Search Explorer",
       "description": "Opens up a Search Menu for the Explorer",
       "mode": "view"
-    },
-    {
-      "name": "view-history",
-      "title": "View Search History",
-      "description": "View your previous Solana searches",
-      "mode": "view"
     }
   ],
   "preferences": [

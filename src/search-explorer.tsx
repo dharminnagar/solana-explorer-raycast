@@ -8,10 +8,19 @@ import {
   Toast,
   getPreferenceValues,
   Clipboard,
+  LocalStorage,
 } from "@raycast/api";
 import { useState, useEffect } from "react";
 import { searchSolana, formatSearchResult, Network, EXPLORER_BASE_URLS, EXPLORER_CLUSTER_URLS } from "./utils/solana";
-import { addToHistory, getLastNetwork, setLastNetwork } from "./utils/history";
+import {
+  addToHistory,
+  clearHistory,
+  getLastNetwork,
+  setLastNetwork,
+  SearchHistoryItem,
+  getHistory,
+  HISTORY_KEY,
+} from "./utils/history";
 
 interface Preferences {
   defaultExplorer: "Solana Explorer" | "Solscan" | "SolanaFM";
@@ -22,11 +31,13 @@ export default function Command() {
   const [searchResult, setSearchResult] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentNetwork, setCurrentNetwork] = useState<Network>("mainnet");
+  const [history, setHistory] = useState<SearchHistoryItem[]>([]);
   const preferences = getPreferenceValues<Preferences>();
 
-  // Load the last selected network when the component mounts
+  // Load the last selected network and history when the component mounts
   useEffect(() => {
     loadLastNetwork();
+    loadHistory();
   }, []);
 
   useEffect(() => {
@@ -38,6 +49,11 @@ export default function Command() {
   async function loadLastNetwork() {
     const lastNetwork = await getLastNetwork();
     setCurrentNetwork(lastNetwork);
+  }
+
+  async function loadHistory() {
+    const items = await getHistory();
+    setHistory(items);
   }
 
   async function handleNetworkChange(network: Network) {
@@ -52,6 +68,8 @@ export default function Command() {
       setSearchResult(result);
       // Save to history
       await addToHistory(searchQuery, result.type);
+      // Reload history to show the new item
+      await loadHistory();
     } catch (error) {
       await showToast({
         style: Toast.Style.Failure,
@@ -166,6 +184,45 @@ export default function Command() {
           </ActionPanel>
         }
       />
+      {history.length > 0 && (
+        <List.Section title="Search History">
+          {history.map((item) => (
+            <List.Item
+              key={item.query}
+              id={item.query}
+              icon={Icon.Clock}
+              title={item.query}
+              subtitle={`${item.type} • ${new Date(item.timestamp).toLocaleString()}`}
+              actions={
+                <ActionPanel>
+                  <Action.OpenInBrowser
+                    title={`Open in ${preferences.defaultExplorer}`}
+                    url={getExplorerUrl(item.query)}
+                  />
+                  <Action.CopyToClipboard title="Copy to Clipboard" content={item.query} />
+                  <Action
+                    title="Delete Item"
+                    icon={Icon.Trash}
+                    onAction={async () => {
+                      const updatedHistory = history.filter((h) => h.query !== item.query);
+                      await LocalStorage.setItem(HISTORY_KEY, JSON.stringify(updatedHistory));
+                      setHistory(updatedHistory);
+                    }}
+                  />
+                  <Action
+                    title="Clear History"
+                    icon={Icon.Trash}
+                    onAction={async () => {
+                      await clearHistory();
+                      setHistory([]);
+                    }}
+                  />
+                </ActionPanel>
+              }
+            />
+          ))}
+        </List.Section>
+      )}
     </List>
   );
 }

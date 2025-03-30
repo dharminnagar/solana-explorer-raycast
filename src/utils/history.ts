@@ -7,7 +7,7 @@ export interface SearchHistoryItem {
   timestamp: number;
 }
 
-const HISTORY_KEY = "solana-search-history";
+export const HISTORY_KEY = "solana-search-history";
 const NETWORK_KEY = "solana-network";
 const MAX_HISTORY_ITEMS = 50;
 
