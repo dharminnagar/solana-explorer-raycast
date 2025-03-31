@@ -1,8 +1,17 @@
 # Solana Explorer for Raycast
 
-A powerful Raycast extension that brings Solana blockchain exploration directly to your fingertips. Search and explore Solana addresses, transactions, blocks, and tokens with ease.
+![Extension Image](metadata/solana-explorer-landing.png)
 
-![Extension Icon](extension-icon.png)
+A powerful Raycast extension that brings Solana blockchain exploration directly to your fingertips. This extension seamlessly integrates with Raycast to provide instant access to the Solana blockchain, allowing you to search any Solana address to view balances, transactions, and account details. Look up transaction details using transaction signatures/hashes and explore block information and contained transactions. View comprehensive token data including price, supply, and metadata, as well as access token account information and associated mint addresses.
+
+The extension supports multiple popular Solana block explorers:
+- Solana Explorer (explorer.solana.com)
+- Solscan (solscan.io) 
+- SolanaFM (solana.fm)
+- Orb (orb.helius.dev)
+
+With configurable RPC endpoints and network switching between Mainnet, Devnet and Testnet, you have full flexibility in how you interact with the Solana blockchain. The extension provides a native Raycast experience with fast, keyboard-driven navigation and detailed formatted output for all blockchain data.
+
 
 ## Features
 
@@ -48,6 +57,7 @@ A powerful Raycast extension that brings Solana blockchain exploration directly 
 - Solana Explorer
 - Solscan
 - SolanaFM
+- Orb
 
 ### 📱 User-Friendly Interface
 - Clean, organized display of information
@@ -83,7 +93,6 @@ A powerful Raycast extension that brings Solana blockchain exploration directly 
 5. Configure:
    - Default Explorer: Choose your preferred Solana block explorer
    - Network: Select the Solana network (Mainnet, Devnet, or Testnet)
-   - Moralis API Key: Your API key for token metadata
 
 ## Development
 
@@ -139,15 +148,13 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License
 
 ## Acknowledgments
 
 - [Raycast](https://raycast.com/) for the amazing platform
 - [Solana](https://solana.com/) for the blockchain
-- [Helius](https://helius.xyz/) for the RPC endpoint
-- [Moralis](https://moralis.io/) for token metadata
 
 ## Support
 
-If you encounter any issues or have suggestions, please [open an issue](https://github.com/yourusername/solana-explorer/issues).
+If you encounter any issues or have suggestions, please [open an issue](https://github.com/dharminnagar/solana-explorer-raycast/issues).
