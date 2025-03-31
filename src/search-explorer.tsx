@@ -13,7 +13,7 @@ import {
   confirmAlert,
   showHUD,
 } from "@raycast/api";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { searchSolana, formatSearchResult, Network, EXPLORER_BASE_URLS, EXPLORER_CLUSTER_URLS } from "./utils/solana";
 import {
   addToHistory,
@@ -44,9 +44,19 @@ export default function Command() {
   }, []);
 
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
     if (searchQuery) {
-      performSearch();
+      timeoutId = setTimeout(() => {
+        performSearch();
+      }, 800);
     }
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [searchQuery, currentNetwork]);
 
   async function loadLastNetwork() {
