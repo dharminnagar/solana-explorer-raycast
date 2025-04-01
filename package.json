@@ -71,13 +71,13 @@
     }
   ],
   "dependencies": {
+    "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
+    "@metaplex-foundation/umi-bundle-defaults": "^1.1.1",
     "@raycast/api": "^1.94.2",
     "@raycast/utils": "^1.17.0",
     "@solana/spl-token": "^0.3.11",
-    "@solana/spl-token-metadata": "^0.1.6",
     "@solana/spl-token-registry": "^0.2.4574",
-    "@solana/web3.js": "^1.91.1",
-    "dotenv": "^16.4.7"
+    "@solana/web3.js": "^1.91.1"
   },
   "devDependencies": {
     "@raycast/eslint-config": "^2.0.4",

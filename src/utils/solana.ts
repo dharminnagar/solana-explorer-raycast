@@ -1,7 +1,10 @@
-import { Connection, PublicKey, ParsedTransactionWithMeta, BlockResponse, clusterApiUrl } from "@solana/web3.js";
-import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { TokenInfo, TokenListProvider } from "@solana/spl-token-registry";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TokenInfo } from "@solana/spl-token-registry";
 import { getPreferenceValues } from "@raycast/api";
+import { PublicKey as UmiPublicKey } from "@metaplex-foundation/umi";
+import { fetchDigitalAsset } from "@metaplex-foundation/mpl-token-metadata";
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
 
 interface Preferences {
   defaultExplorer: "Solana Explorer" | "Solscan" | "SolanaFM" | "Orb";
@@ -14,7 +17,7 @@ const preferences = getPreferenceValues<Preferences>();
 
 export type Network = "mainnet" | "devnet" | "testnet";
 
-export type SearchType = "address" | "transaction" | "block" | "token";
+export type SearchType = "address" | "transaction" | "block" | "token" | "NFT";
 
 export interface SearchResult {
   type: SearchType;
@@ -31,6 +34,11 @@ export interface TokenMetadata {
   marketCap?: string;
   liquidity?: string;
   totalSupply?: string;
+}
+
+export interface NFTMetadataURI {
+  description: string;
+  image: string;
 }
 
 // RPC URLs for different networks
@@ -117,6 +125,34 @@ async function getTokenMetadata(tokenAddress: string, network: Network): Promise
   }
 }
 
+async function getNFTMetadata(nftAddress: string, network: Network) {
+  try {
+    const connection = getConnection(network);
+    const mintPublicKey = nftAddress as UmiPublicKey;
+
+    const umi = createUmi(connection.rpcEndpoint);
+    const nft = (await fetchDigitalAsset(umi, mintPublicKey)).metadata;
+
+    const metadataURI: NFTMetadataURI = JSON.parse(await (await fetch(nft.uri)).text());
+
+    const finalMetadata = {
+      name: nft.name,
+      symbol: nft.symbol,
+      description: metadataURI.description,
+      image: metadataURI.image,
+      sellerFeeBasisPoints: nft.sellerFeeBasisPoints,
+      isMutable: nft.isMutable,
+      primarySaleHappened: nft.primarySaleHappened,
+      updateAuthorityAddress: nft.updateAuthority.toString(),
+    };
+
+    return finalMetadata;
+  } catch (error) {
+    console.error("Error fetching NFT metadata:", error);
+    return null;
+  }
+}
+
 export async function detectSearchType(query: string, network: Network): Promise<SearchType> {
   if (!query) return "address";
 
@@ -133,6 +169,11 @@ export async function detectSearchType(query: string, network: Network): Promise
   // For addresses, check if it's a token account
   if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(query)) {
     const isToken = await isTokenAccount(query, network);
+    if (isToken) {
+      const tokenMetadata = await getTokenMetadata(query, network);
+      return tokenMetadata ? "token" : "NFT";
+    }
+
     return isToken ? "token" : "address";
   }
 
@@ -218,6 +259,22 @@ export async function searchSolana(query: string, network: Network = "mainnet"):
           rentEpoch: tokenAccountInfo.rentEpoch ?? 0,
           mint: mintAddress,
           metadata: tokenMetadata,
+        },
+      };
+    }
+
+    case "NFT": {
+      const nftMetadata = await getNFTMetadata(query, network);
+      if (!nftMetadata) {
+        throw new Error("NFT not found");
+      }
+
+      return {
+        type,
+        network,
+        data: {
+          address: query,
+          metadata: nftMetadata,
         },
       };
     }
@@ -370,6 +427,33 @@ ${metadata?.totalSupply ? `- **Total Supply:** ${metadata.totalSupply}` : ""}
 ### Account Details
 - **Rent Epoch:** ${data.rentEpoch ?? "Unknown"}
 - **Executable:** ${data.executable ? "Yes" : "No"}
+
+## Network
+- **Current Network:** ${network}`;
+    }
+
+    case "NFT": {
+      const data = result.data;
+      if (!data) return "# Error\nNFT data not available";
+
+      const metadata = data.metadata;
+
+      return `# NFT Information
+
+## NFT Details
+${metadata?.image ? `<img src="${metadata.image}" width="200" height="200" style="border-radius: 8px; margin-bottom: 1px;" />` : ""}
+
+### Basic Information
+- **Name:** ${metadata?.name ?? "Unknown"}
+- **Symbol:** ${metadata?.symbol ?? "Unknown"}
+${metadata?.description ? `- **Description:** ${metadata.description}` : ""}
+
+### NFT Properties
+- **Mint Address:** \`${data.address ?? "Unknown"}\`
+- **Update Authority:** \`${metadata?.updateAuthorityAddress ?? "Unknown"}\`
+- **Seller Fee Basis Points:** ${metadata?.sellerFeeBasisPoints ?? "Unknown"}
+- **Is Mutable:** ${metadata?.isMutable ? "Yes" : "No"}
+- **Primary Sale Happened:** ${metadata?.primarySaleHappened ? "Yes" : "No"}
 
 ## Network
 - **Current Network:** ${network}`;
