@@ -129,18 +129,21 @@ export default function Command() {
         icon={Icon.Globe}
         onAction={() => handleNetworkChange("mainnet")}
         autoFocus={currentNetwork === "mainnet"}
+        shortcut={{ modifiers: ["ctrl"], key: "m" }}
       />
       <Action
         title="Devnet"
         icon={Icon.Code}
         onAction={() => handleNetworkChange("devnet")}
         autoFocus={currentNetwork === "devnet"}
+        shortcut={{ modifiers: ["ctrl"], key: "d" }}
       />
       <Action
         title="Testnet"
         icon={Icon.Hammer}
         onAction={() => handleNetworkChange("testnet")}
         autoFocus={currentNetwork === "testnet"}
+        shortcut={{ modifiers: ["ctrl"], key: "t" }}
       />
     </ActionPanel.Submenu>
   );
@@ -150,6 +153,17 @@ export default function Command() {
       searchBarPlaceholder="Search by address, transaction hash, block number, or token address"
       onSearchTextChange={setSearchQuery}
       isLoading={isLoading}
+      searchBarAccessory={
+        <List.Dropdown
+          tooltip="Current Network"
+          value={currentNetwork}
+          onChange={(value) => handleNetworkChange(value as Network)}
+        >
+          <List.Dropdown.Item title="Mainnet" value="mainnet" />
+          <List.Dropdown.Item title="Devnet" value="devnet" />
+          <List.Dropdown.Item title="Testnet" value="testnet" />
+        </List.Dropdown>
+      }
     >
       {searchResult && (
         <List.Item
