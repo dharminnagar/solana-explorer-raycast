@@ -13,8 +13,15 @@ import {
   confirmAlert,
   showHUD,
 } from "@raycast/api";
-import { useState, useEffect, useCallback } from "react";
-import { searchSolana, formatSearchResult, Network, EXPLORER_BASE_URLS, EXPLORER_CLUSTER_URLS } from "./utils/solana";
+import { useState, useEffect } from "react";
+import {
+  searchSolana,
+  formatSearchResult,
+  Network,
+  EXPLORER_BASE_URLS,
+  EXPLORER_CLUSTER_URLS,
+  SearchResult,
+} from "./utils/solana";
 import {
   addToHistory,
   clearHistory,
@@ -31,7 +38,7 @@ interface Preferences {
 
 export default function Command() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResult, setSearchResult] = useState<any>(null);
+  const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentNetwork, setCurrentNetwork] = useState<Network>("mainnet");
   const [history, setHistory] = useState<SearchHistoryItem[]>([]);
@@ -84,6 +91,7 @@ export default function Command() {
       // Reload history to show the new item
       await loadHistory();
     } catch (error) {
+      console.log(error);
       await showToast({
         style: Toast.Style.Failure,
         title: "Error",
@@ -101,6 +109,7 @@ export default function Command() {
         setSearchQuery(clipboardText.text.trim());
       }
     } catch (error) {
+      console.log(error);
       await showToast({
         style: Toast.Style.Failure,
         title: "Error",

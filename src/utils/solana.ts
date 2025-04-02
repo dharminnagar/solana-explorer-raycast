@@ -1,6 +1,12 @@
-import { Connection, PublicKey } from "@solana/web3.js";
+import {
+  Connection,
+  PublicKey,
+  AccountInfo,
+  ParsedTransactionWithMeta,
+  BlockResponse,
+  VersionedBlockResponse,
+} from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { TokenInfo } from "@solana/spl-token-registry";
 import { getPreferenceValues } from "@raycast/api";
 import { PublicKey as UmiPublicKey } from "@metaplex-foundation/umi";
 import { fetchDigitalAsset } from "@metaplex-foundation/mpl-token-metadata";
@@ -19,9 +25,41 @@ export type Network = "mainnet" | "devnet" | "testnet";
 
 export type SearchType = "address" | "transaction" | "block" | "token" | "NFT";
 
+interface AddressData extends AccountInfo<Buffer> {
+  address: string;
+}
+
+interface TokenData extends AccountInfo<Buffer> {
+  address: string;
+  mint: string;
+  metadata: TokenMetadata | null;
+}
+
+interface NFTData {
+  address: string;
+  metadata: {
+    name: string;
+    symbol: string;
+    description: string;
+    image: string;
+    sellerFeeBasisPoints: number;
+    isMutable: boolean;
+    primarySaleHappened: boolean;
+    updateAuthorityAddress: string;
+  } | null;
+}
+
+type ResultData =
+  | AddressData
+  | ParsedTransactionWithMeta
+  | BlockResponse
+  | VersionedBlockResponse
+  | TokenData
+  | NFTData;
+
 export interface SearchResult {
   type: SearchType;
-  data: any;
+  data: ResultData;
   network: Network;
 }
 
@@ -79,8 +117,6 @@ export const EXPLORER_CLUSTER_URLS = {
   },
 };
 
-let tokenList: TokenInfo[] = [];
-
 // Create a function to get connection for a specific network
 export function getConnection(network: Network): Connection {
   return new Connection(RPC_URLS[network]);
@@ -99,14 +135,15 @@ async function isTokenAccount(address: string, network: Network): Promise<boolea
   }
 }
 
-async function getTokenMetadata(tokenAddress: string, network: Network): Promise<TokenMetadata | null> {
+async function getTokenMetadata(tokenAddress: string): Promise<TokenMetadata | null> {
   try {
     const response = await fetch(`https://api.phantom.app/tokens/v1/solana:101/address/${tokenAddress}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const parsedReponse = (await response.json()) as any;
-    const data = parsedReponse.data;
+
+    const parsedResponse = (await response.json()) as { data: TokenMetadata };
+    const data = parsedResponse.data;
 
     // Validate and transform the response data
     return {
@@ -170,7 +207,7 @@ export async function detectSearchType(query: string, network: Network): Promise
   if (/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(query)) {
     const isToken = await isTokenAccount(query, network);
     if (isToken) {
-      const tokenMetadata = await getTokenMetadata(query, network);
+      const tokenMetadata = await getTokenMetadata(query);
       return tokenMetadata ? "token" : "NFT";
     }
 
@@ -211,6 +248,9 @@ export async function searchSolana(query: string, network: Network = "mainnet"):
           commitment: "confirmed",
           maxSupportedTransactionVersion: 0,
         });
+        if (!tx) {
+          throw new Error("Transaction not found");
+        }
         return {
           type,
           network,
@@ -245,18 +285,14 @@ export async function searchSolana(query: string, network: Network = "mainnet"):
 
       // Get the mint address from the token account data
       const mintAddress = new PublicKey(tokenAccountInfo.data.slice(0, 32)).toString();
-      const tokenMetadata = await getTokenMetadata(query, network);
+      const tokenMetadata = await getTokenMetadata(query);
 
       return {
         type,
         network,
         data: {
+          ...tokenAccountInfo,
           address: query,
-          owner: tokenAccountInfo.owner?.toString() ?? "Unknown",
-          data: tokenAccountInfo.data,
-          lamports: tokenAccountInfo.lamports ?? 0,
-          executable: tokenAccountInfo.executable ?? false,
-          rentEpoch: tokenAccountInfo.rentEpoch ?? 0,
           mint: mintAddress,
           metadata: tokenMetadata,
         },
@@ -290,15 +326,15 @@ export function formatSearchResult(result: SearchResult): string {
 
   switch (result.type) {
     case "address": {
+      if (!isAddressData(result.data)) {
+        return "# Error\nInvalid address data";
+      }
       const data = result.data;
-      if (!data) return "# Error\nAccount data not available";
-
       const solBalance = ((data.lamports ?? 0) / 1e9).toFixed(4);
       const address = data.address ?? "Unknown";
       const owner = data.owner?.toString() ?? "Unknown";
       const dataSize = data.data?.length ? (data.data.length / 1024).toFixed(2) : "0";
       const rentEpoch = data.rentEpoch ?? "Unknown";
-      const slot = data.slot ?? "Unknown";
 
       return `# Account Details
 
@@ -312,13 +348,15 @@ export function formatSearchResult(result: SearchResult): string {
 ## Metadata
 - **Owner Program:** \`${owner}\`
 - **Rent Epoch:** ${rentEpoch}
-- **Slot:** ${slot}
 
 ## Network
 - **Current Network:** ${network}`;
     }
 
     case "transaction": {
+      if (!isTransactionData(result.data)) {
+        return "# Error\nInvalid transaction data";
+      }
       const data = result.data;
       if (!data?.transaction?.signatures?.[0] || !data?.meta) {
         return "# Error\nTransaction data not available";
@@ -337,25 +375,26 @@ export function formatSearchResult(result: SearchResult): string {
 - **Fee:** ${fee} SOL (${data.meta.fee?.toLocaleString() ?? "0"} lamports)
 - **Status:** ${status === "Success" ? "🟢 Success" : "🔴 Failed"}
 
-## Transaction Info
-- **Slot:** ${data.slot ?? "Unknown"}
-- **Block Hash:** \`${data.blockhash ?? "Unknown"}\`
-- **Previous Block Hash:** \`${data.previousBlockhash ?? "Unknown"}\`
-
 ## Instructions
 ${instructions
-  .map(
-    (ix: any, index: number) => `
+  .map((ix, index) => {
+    const programId = ix.programId?.toString() ?? "Unknown";
+    const accounts = "accounts" in ix ? (ix.accounts?.length ?? 0) : 0;
+    const data = "data" in ix ? (ix.data ?? "No data") : "No data";
+    return `
 ### Instruction ${index + 1}
-- **Program:** \`${ix.programId?.toString() ?? "Unknown"}\`
-- **Accounts:** ${ix.accounts?.length ?? 0}
-- **Data:** \`${ix.data ?? "No data"}\`
-`,
-  )
+- **Program:** \`${programId}\`
+- **Accounts:** ${accounts}
+- **Data:** \`${data}\`
+`;
+  })
   .join("\n")}`;
     }
 
     case "block": {
+      if (!isBlockData(result.data)) {
+        return "# Error\nInvalid block data";
+      }
       const data = result.data;
       if (!data) return "# Error\nBlock data not available";
 
@@ -367,8 +406,6 @@ ${instructions
 
 ## Overview
 - **Block Height:** ${data.parentSlot ?? "Unknown"}
-- **Block Hash:** \`${data.blockhash ?? "Unknown"}\`
-- **Previous Block Hash:** \`${data.previousBlockhash ?? "Unknown"}\`
 - **Transaction Count:** ${transactions.length}
 - **Block Time:** ${blockTime}
 
@@ -376,23 +413,30 @@ ${instructions
 - **Parent Slot:** ${data.parentSlot ?? "Unknown"}
 - **Rewards:** ${rewards.length}
 - **Block Time:** ${data.blockTime ?? "Unknown"}
-- **Block Height:** ${data.blockHeight ?? "Unknown"}
 
 ## Transactions
 ${transactions
   .slice(0, 5)
-  .map(
-    (tx: any, index: number) => `
+  .map((tx, index) => {
+    const signature = tx.transaction?.signatures?.[0] ?? "Unknown";
+    const program =
+      tx.transaction?.message && "getAccountKeys" in tx.transaction.message
+        ? (tx.transaction.message.getAccountKeys().keySegments()[1]?.toString() ?? "Unknown")
+        : "Unknown";
+    return `
 ### Transaction ${index + 1}
-- **Signature:** \`${tx.transaction?.signatures?.[0] ?? "Unknown"}\`
-- **Program:** \`${tx.transaction?.message?.accountKeys?.[1]?.toString() ?? "Unknown"}\`
-`,
-  )
+- **Signature:** \`${signature}\`
+- **Program:** \`${program}\`
+`;
+  })
   .join("\n")}
 ${transactions.length > 5 ? `\n... and ${transactions.length - 5} more transactions` : ""}`;
     }
 
     case "token": {
+      if (!isTokenData(result.data)) {
+        return "# Error\nInvalid token data";
+      }
       const data = result.data;
       if (!data) return "# Error\nToken account data not available";
 
@@ -408,7 +452,6 @@ ${metadata?.logoURI ? `<img src="${metadata.logoURI}" width="48" height="48" sty
 - **Name:** ${metadata?.name ?? "Unknown"}
 - **Symbol:** ${metadata?.symbol ?? "Unknown"}
 - **Decimals:** ${metadata?.decimals ?? "Unknown"}
-${metadata?.standard ? `- **Standard:** ${metadata.standard}` : ""}
 ${metadata?.description ? `- **Description:** ${metadata.description}` : ""}
 
 ### Market Data
@@ -420,7 +463,7 @@ ${metadata?.totalSupply ? `- **Total Supply:** ${metadata.totalSupply}` : ""}
 ### Overview
 - **Token Account:** \`${data.address ?? "Unknown"}\`
 - **Mint Address:** \`${data.mint ?? "Unknown"}\`
-- **Owner Program:** \`${data.owner ?? "Unknown"}\`
+- **Owner Program:** \`${data.owner?.toString() ?? "Unknown"}\`
 - **Lamports:** ${(data.lamports ?? 0).toLocaleString()}
 - **Data Size:** ${dataSize} KB
 
@@ -433,6 +476,9 @@ ${metadata?.totalSupply ? `- **Total Supply:** ${metadata.totalSupply}` : ""}
     }
 
     case "NFT": {
+      if (!isNFTData(result.data)) {
+        return "# Error\nInvalid NFT data";
+      }
       const data = result.data;
       if (!data) return "# Error\nNFT data not available";
 
@@ -462,4 +508,24 @@ ${metadata?.description ? `- **Description:** ${metadata.description}` : ""}
     default:
       return "# Error\nUnknown search type";
   }
+}
+
+function isAddressData(data: ResultData): data is AddressData {
+  return "address" in data && "lamports" in data && "owner" in data;
+}
+
+function isTokenData(data: ResultData): data is TokenData {
+  return "address" in data && "mint" in data && "metadata" in data;
+}
+
+function isNFTData(data: ResultData): data is NFTData {
+  return "address" in data && "metadata" in data;
+}
+
+function isTransactionData(data: ResultData): data is ParsedTransactionWithMeta {
+  return "transaction" in data && "meta" in data;
+}
+
+function isBlockData(data: ResultData): data is BlockResponse | VersionedBlockResponse {
+  return "parentSlot" in data && "transactions" in data;
 }
