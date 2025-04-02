@@ -2,7 +2,7 @@
 
 ![Extension Image](metadata/solana-explorer-landing.png)
 
-A powerful Raycast extension that brings Solana blockchain exploration directly to your fingertips. This extension seamlessly integrates with Raycast to provide instant access to the Solana blockchain, allowing you to search any Solana address to view balances, transactions, and account details. Look up transaction details using transaction signatures/hashes and explore block information and contained transactions. View comprehensive token data including price, supply, and metadata, as well as access token account information and associated mint addresses.
+A powerful Raycast extension that brings Solana blockchain exploration directly to your fingertips. This extension seamlessly integrates with Raycast to provide instant access to the Solana blockchain, allowing you to search any Solana address to view balances, transactions, and account details. Look up transaction details using transaction signatures/hashes and explore block information and contained transactions. View comprehensive token data including price, supply, and metadata, as well as access token account information and associated mint addresses. Additionally, resolve Solana Name Service (SNS) domains to their corresponding addresses and explore NFT metadata and details.
 
 The extension supports multiple popular Solana block explorers:
 - Solana Explorer (explorer.solana.com)
@@ -20,12 +20,20 @@ With configurable RPC endpoints and network switching between Mainnet, Devnet an
 - **Transaction Search**: Find transaction details by signature
 - **Block Explorer**: Look up block information by block number
 - **Token Discovery**: Search for token accounts and view detailed token information
+- **NFT Explorer**: View NFT metadata, properties, and details
+- **Domain Resolution**: Resolve Solana Name Service (SNS) domains (e.g., `example.sol`)
 
 ### 🌐 Network Support
 - **Mainnet**: Access the main Solana network
 - **Devnet**: Connect to Solana's development network
 - **Testnet**: Use Solana's test network
 - Easily switch networks with a click
+
+### 🔗 Multiple Explorer Support
+- Solana Explorer
+- Solscan
+- SolanaFM
+- Orb
 
 ### 📊 Comprehensive Information
 - **Account Details**:
@@ -53,11 +61,14 @@ With configurable RPC endpoints and network switching between Mainnet, Devnet an
   - Account details
   - Metadata
 
-### 🔗 Multiple Explorer Support
-- Solana Explorer
-- Solscan
-- SolanaFM
-- Orb
+- **NFT Information**:
+  - Name and symbol
+  - Description
+  - Image preview
+  - Update authority
+  - Seller fee basis points
+  - Mutability status
+  - Primary sale status
 
 ### 📱 User-Friendly Interface
 - Clean, organized display of information
@@ -68,7 +79,7 @@ With configurable RPC endpoints and network switching between Mainnet, Devnet an
 
 ## Installation
 
-1. Install Raycast from the [Mac App Store](https://apps.apple.com/app/raycast/id1548341683)
+1. Install Raycast from the [Website](https://www.raycast.com/)
 2. Open Raycast and press `⌘ + Space`
 3. Type "Extensions" and select "Browse Extensions"
 4. Search for "Solana Explorer"
@@ -83,6 +94,8 @@ With configurable RPC endpoints and network switching between Mainnet, Devnet an
    - Transaction signature (88 characters)
    - Block number
    - Token account address
+   - NFT address
+   - Domain name (e.g., `example.sol`)
 
 ## Preferences
 
@@ -93,6 +106,10 @@ With configurable RPC endpoints and network switching between Mainnet, Devnet an
 5. Configure:
    - Default Explorer: Choose your preferred Solana block explorer
    - Network: Select the Solana network (Mainnet, Devnet, or Testnet)
+   - RPC URLs: Configure custom RPC endpoints for each network:
+     - Mainnet RPC URL (default: https://api.mainnet-beta.solana.com)
+     - Devnet RPC URL (default: https://api.devnet.solana.com)
+     - Testnet RPC URL (default: https://api.testnet.solana.com)
 
 ## Development
 
