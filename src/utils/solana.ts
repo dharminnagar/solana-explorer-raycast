@@ -11,6 +11,7 @@ import { getPreferenceValues } from "@raycast/api";
 import { PublicKey as UmiPublicKey } from "@metaplex-foundation/umi";
 import { fetchDigitalAsset } from "@metaplex-foundation/mpl-token-metadata";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { getDomainKeySync, NameRegistryState } from "@bonfida/spl-name-service";
 
 interface Preferences {
   defaultExplorer: "Solana Explorer" | "Solscan" | "SolanaFM" | "Orb";
@@ -23,7 +24,7 @@ const preferences = getPreferenceValues<Preferences>();
 
 export type Network = "mainnet" | "devnet" | "testnet";
 
-export type SearchType = "address" | "transaction" | "block" | "token" | "NFT";
+export type SearchType = "address" | "transaction" | "block" | "token" | "NFT" | "domain";
 
 interface AddressData extends AccountInfo<Buffer> {
   address: string;
@@ -193,6 +194,11 @@ async function getNFTMetadata(nftAddress: string, network: Network) {
 export async function detectSearchType(query: string, network: Network): Promise<SearchType> {
   if (!query) return "address";
 
+  // Check if it's a domain name (.sol or .solana)
+  if (/^[a-zA-Z0-9-]+\.(sol|solana)$/.test(query)) {
+    return "domain";
+  }
+
   // Check if it's a transaction signature (base58 encoded, 88 characters)
   if (/^[1-9A-HJ-NP-Za-km-z]{87,88}$/.test(query)) {
     return "transaction";
@@ -227,6 +233,39 @@ export async function searchSolana(query: string, network: Network = "mainnet"):
   const connection = getConnection(network);
 
   switch (type) {
+    case "domain": {
+      try {
+        const domain = query.toLowerCase();
+        const { pubkey } = getDomainKeySync(domain);
+        console.log(pubkey.toString());
+        if (!pubkey) {
+          throw new Error("Domain not found");
+        }
+
+        // Get account info for the resolved address
+        const { registry, nftOwner } = await NameRegistryState.retrieve(connection, pubkey);
+        console.log(registry);
+        console.log(nftOwner);
+
+        const accountInfo = await connection.getAccountInfo(pubkey);
+        if (!accountInfo) {
+          throw new Error("Account not found");
+        }
+
+        return {
+          type: "address",
+          network,
+          data: {
+            ...accountInfo,
+            address: pubkey.toString(),
+          },
+        };
+      } catch (error) {
+        console.error("Error resolving domain:", error);
+        throw new Error("Failed to resolve domain");
+      }
+    }
+
     case "address": {
       const accountInfo = await connection.getAccountInfo(new PublicKey(query));
       if (!accountInfo) {
