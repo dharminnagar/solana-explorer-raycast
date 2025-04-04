@@ -118,14 +118,18 @@ export default function Command() {
     }
   }
 
-  const getExplorerUrl = (query: string): string => {
+  const getExplorerUrl = (query: string, type?: string): string => {
     const baseUrl = EXPLORER_BASE_URLS[preferences.defaultExplorer];
     const clusterUrl = EXPLORER_CLUSTER_URLS[preferences.defaultExplorer][currentNetwork];
-    if (searchResult?.type === "address" || searchResult?.type === "token" || searchResult?.type === "NFT") {
+    
+    // Use the provided type parameter if available, otherwise fall back to searchResult?.type
+    const resultType = type || searchResult?.type;
+    
+    if (resultType === "address" || resultType === "token" || resultType === "NFT") {
       return `${baseUrl}/address/${query}${clusterUrl}`;
-    } else if (searchResult?.type === "transaction") {
+    } else if (resultType === "transaction") {
       return `${baseUrl}/tx/${query}${clusterUrl}`;
-    } else if (searchResult?.type === "block") {
+    } else if (resultType === "block") {
       return `${baseUrl}/block/${query}${clusterUrl}`;
     }
     return `${baseUrl}${clusterUrl}`;
@@ -244,7 +248,7 @@ export default function Command() {
                 <ActionPanel>
                   <Action.OpenInBrowser
                     title={`Open in ${preferences.defaultExplorer}`}
-                    url={getExplorerUrl(item.query)}
+                    url={getExplorerUrl(item.query, item.type)}
                   />
                   <Action.CopyToClipboard
                     title="Copy to Clipboard"
