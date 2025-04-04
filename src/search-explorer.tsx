@@ -66,6 +66,12 @@ export default function Command() {
     };
   }, [searchQuery, currentNetwork]);
 
+  useEffect(() => {
+    if (searchQuery == "") {
+      setSearchResult(null);
+    }
+  }, [searchQuery]);
+
   async function loadLastNetwork() {
     const lastNetwork = await getLastNetwork();
     setCurrentNetwork(lastNetwork);
@@ -121,10 +127,10 @@ export default function Command() {
   const getExplorerUrl = (query: string, type?: string): string => {
     const baseUrl = EXPLORER_BASE_URLS[preferences.defaultExplorer];
     const clusterUrl = EXPLORER_CLUSTER_URLS[preferences.defaultExplorer][currentNetwork];
-    
+
     // Use the provided type parameter if available, otherwise fall back to searchResult?.type
     const resultType = type || searchResult?.type;
-    
+
     if (resultType === "address" || resultType === "token" || resultType === "NFT") {
       return `${baseUrl}/address/${query}${clusterUrl}`;
     } else if (resultType === "transaction") {
