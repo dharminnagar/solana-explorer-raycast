@@ -12,6 +12,13 @@ The extension supports multiple popular Solana block explorers:
 
 With configurable RPC endpoints and network switching between Mainnet, Devnet and Testnet, you have full flexibility in how you interact with the Solana blockchain. The extension provides a native Raycast experience with fast, keyboard-driven navigation and detailed formatted output for all blockchain data.
 
+## Configuration
+
+When you first open the extension, you will be prompted to configure the following:
+- Select your default explorer (Eg. Solscan, Orb etc.)
+- Configure custom RPC endpoints for each network or use the default ones
+
+You can also change these settings later by going to the extension preferences.
 
 ## Features
 
@@ -121,7 +128,7 @@ With configurable RPC endpoints and network switching between Mainnet, Devnet an
 ### Setup
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/solana-explorer.git
+git clone https://github.com/dharminnagar/solana-explorer.git
 cd solana-explorer
 ```
 

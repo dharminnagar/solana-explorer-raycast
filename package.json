@@ -14,7 +14,7 @@
     {
       "name": "search-explorer",
       "title": "Search Explorer",
-      "description": "Opens up a Search Menu for the Explorer",
+      "description": "Quickly open up a Search Menu for the Explorer",
       "mode": "view"
     }
   ],
