@@ -1,4 +1,4 @@
-# Solana Explorer for Raycast
+# Solana Blockchain Explorer for Raycast
 
 ![Extension Image](metadata/solana-explorer-landing.png)
 
@@ -89,7 +89,7 @@ You can also change these settings later by going to the extension preferences.
 1. Install Raycast from the [Website](https://www.raycast.com/)
 2. Open Raycast and press `⌘ + Space`
 3. Type "Extensions" and select "Browse Extensions"
-4. Search for "Solana Explorer"
+4. Search for "Solana Blockchain Explorer"
 5. Click "Install"
 
 ## Usage
