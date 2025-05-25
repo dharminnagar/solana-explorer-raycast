@@ -202,6 +202,30 @@ export default function Command() {
                           title={`Open in ${preferences.defaultExplorer}`}
                           url={getExplorerUrl(searchQuery)}
                         />
+                        {preferences.defaultExplorer !== "Solana Explorer" && (
+                          <Action.OpenInBrowser
+                            title={`Open in Solana Explorer`}
+                            url={`https://solana.com/explorer/address/${searchQuery}`}
+                          />
+                        )}
+                        {preferences.defaultExplorer !== "Solscan" && (
+                          <Action.OpenInBrowser
+                            title={`Open in Solscan`}
+                            url={`https://solscan.io/address/${searchQuery}`}
+                          />
+                        )}
+                        {preferences.defaultExplorer !== "SolanaFM" && (
+                          <Action.OpenInBrowser
+                            title={`Open in SolanaFM`}
+                            url={`https://solanafm.com/address/${searchQuery}`}
+                          />
+                        )}
+                        {preferences.defaultExplorer !== "Orb" && (
+                          <Action.OpenInBrowser
+                            title={`Open in Orb`}
+                            url={`https://orb.network/address/${searchQuery}`}
+                          />
+                        )}
                         <Action.CopyToClipboard
                           title="Copy to Clipboard"
                           content={searchQuery}
@@ -219,6 +243,21 @@ export default function Command() {
                 title={`Open in ${preferences.defaultExplorer}`}
                 url={getExplorerUrl(searchQuery)}
               />
+              {preferences.defaultExplorer !== "Solana Explorer" && (
+                <Action.OpenInBrowser
+                  title={`Open in Solana Explorer`}
+                  url={`https://solana.com/explorer/address/${searchQuery}`}
+                />
+              )}
+              {preferences.defaultExplorer !== "Solscan" && (
+                <Action.OpenInBrowser title={`Open in Solscan`} url={`https://solscan.io/address/${searchQuery}`} />
+              )}
+              {preferences.defaultExplorer !== "SolanaFM" && (
+                <Action.OpenInBrowser title={`Open in SolanaFM`} url={`https://solanafm.com/address/${searchQuery}`} />
+              )}
+              {preferences.defaultExplorer !== "Orb" && (
+                <Action.OpenInBrowser title={`Open in Orb`} url={`https://orb.network/address/${searchQuery}`} />
+              )}
               <Action.CopyToClipboard
                 title="Copy to Clipboard"
                 content={searchQuery}
@@ -256,6 +295,24 @@ export default function Command() {
                     title={`Open in ${preferences.defaultExplorer}`}
                     url={getExplorerUrl(item.query, item.type)}
                   />
+                  {preferences.defaultExplorer !== "Solana Explorer" && (
+                    <Action.OpenInBrowser
+                      title={`Open in Solana Explorer`}
+                      url={`https://solana.com/explorer/address/${item.query}`}
+                    />
+                  )}
+                  {preferences.defaultExplorer !== "Solscan" && (
+                    <Action.OpenInBrowser title={`Open in Solscan`} url={`https://solscan.io/address/${item.query}`} />
+                  )}
+                  {preferences.defaultExplorer !== "SolanaFM" && (
+                    <Action.OpenInBrowser
+                      title={`Open in SolanaFM`}
+                      url={`https://solanafm.com/address/${item.query}`}
+                    />
+                  )}
+                  {preferences.defaultExplorer !== "Orb" && (
+                    <Action.OpenInBrowser title={`Open in Orb`} url={`https://orb.network/address/${item.query}`} />
+                  )}
                   <Action.CopyToClipboard
                     title="Copy to Clipboard"
                     content={item.query}
