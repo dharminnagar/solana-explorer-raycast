@@ -202,6 +202,15 @@ export default function Command() {
                           title={`Open in ${preferences.defaultExplorer}`}
                           url={getExplorerUrl(searchQuery)}
                         />
+                        {searchResult.type === "address" && "address" in searchResult.data && (
+                          <Action.CopyToClipboard
+                            title="Copy Address"
+                            content={searchResult.data.address}
+                            onCopy={async () => {
+                              await showHUD("Copied address to clipboard");
+                            }}
+                          />
+                        )}
                         {preferences.defaultExplorer !== "Solana Explorer" && (
                           <Action.OpenInBrowser
                             title={`Open in Solana Explorer`}
@@ -216,6 +225,7 @@ export default function Command() {
                         )}
                         {preferences.defaultExplorer !== "SolanaFM" && (
                           <Action.OpenInBrowser
+                            // eslint-disable-next-line @raycast/prefer-title-case
                             title={`Open in SolanaFM`}
                             url={`https://solanafm.com/address/${searchQuery}`}
                           />
@@ -243,6 +253,15 @@ export default function Command() {
                 title={`Open in ${preferences.defaultExplorer}`}
                 url={getExplorerUrl(searchQuery)}
               />
+              {searchResult.type === "address" && "address" in searchResult.data && (
+                <Action.CopyToClipboard
+                  title="Copy Address"
+                  content={searchResult.data.address}
+                  onCopy={async () => {
+                    await showHUD("Copied address to clipboard");
+                  }}
+                />
+              )}
               {preferences.defaultExplorer !== "Solana Explorer" && (
                 <Action.OpenInBrowser
                   title={`Open in Solana Explorer`}
@@ -253,6 +272,7 @@ export default function Command() {
                 <Action.OpenInBrowser title={`Open in Solscan`} url={`https://solscan.io/address/${searchQuery}`} />
               )}
               {preferences.defaultExplorer !== "SolanaFM" && (
+                // eslint-disable-next-line @raycast/prefer-title-case
                 <Action.OpenInBrowser title={`Open in SolanaFM`} url={`https://solanafm.com/address/${searchQuery}`} />
               )}
               {preferences.defaultExplorer !== "Orb" && (
@@ -306,6 +326,7 @@ export default function Command() {
                   )}
                   {preferences.defaultExplorer !== "SolanaFM" && (
                     <Action.OpenInBrowser
+                      // eslint-disable-next-line @raycast/prefer-title-case
                       title={`Open in SolanaFM`}
                       url={`https://solanafm.com/address/${item.query}`}
                     />

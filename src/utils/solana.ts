@@ -11,7 +11,7 @@ import { getPreferenceValues } from "@raycast/api";
 import { PublicKey as UmiPublicKey } from "@metaplex-foundation/umi";
 import { fetchDigitalAsset } from "@metaplex-foundation/mpl-token-metadata";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-import { getDomainKeySync, NameRegistryState } from "@bonfida/spl-name-service";
+import { resolve } from "@bonfida/spl-name-service";
 
 interface Preferences {
   defaultExplorer: "Solana Explorer" | "Solscan" | "SolanaFM" | "Orb";
@@ -253,16 +253,11 @@ export async function searchSolana(query: string, network: Network = "mainnet"):
     case "domain": {
       try {
         const domain = query.toLowerCase();
-        const { pubkey } = getDomainKeySync(domain);
+        const pubkey = await resolve(connection, domain);
         console.log(pubkey.toString());
         if (!pubkey) {
           throw new Error("Domain not found");
         }
-
-        // Get account info for the resolved address
-        const { registry, nftOwner } = await NameRegistryState.retrieve(connection, pubkey);
-        console.log(registry);
-        console.log(nftOwner);
 
         const accountInfo = await connection.getAccountInfo(pubkey);
         if (!accountInfo) {
