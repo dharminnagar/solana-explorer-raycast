@@ -71,14 +71,12 @@
     }
   ],
   "dependencies": {
-    "@bonfida/sns-react": "^3.1.2",
     "@bonfida/spl-name-service": "^3.0.10",
     "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
     "@metaplex-foundation/umi-bundle-defaults": "^1.1.1",
     "@raycast/api": "^1.94.2",
     "@raycast/utils": "^1.17.0",
     "@solana/spl-token": "^0.3.11",
-    "@solana/spl-token-registry": "^0.2.4574",
     "@solana/web3.js": "^1.91.1"
   },
   "devDependencies": {
